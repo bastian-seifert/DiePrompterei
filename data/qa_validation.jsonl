@@ -1,0 +1,6 @@
+{"input": "Context: The Eiffel Tower was completed in 1889 for the World's Fair in Paris.\nQuestion: When was the Eiffel Tower completed?", "expected": {"answer": "1889", "confidence": "high"}}
+{"input": "Context: Python is a high-level programming language created by Guido van Rossum.\nQuestion: Who created Python?", "expected": {"answer": "Guido van Rossum", "confidence": "high"}}
+{"input": "Context: The solar system has eight planets orbiting the Sun.\nQuestion: How many moons does Mars have?", "expected": {"answer": "insufficient information", "confidence": "insufficient"}}
+{"input": "Context: Coffee is grown in tropical regions around the equator.\nQuestion: What regions is coffee grown in?", "expected": {"answer": "tropical regions around the equator", "confidence": "high"}}
+{"input": "Context: Shakespeare wrote many famous plays including Hamlet and Romeo and Juliet.\nQuestion: When was Shakespeare born?", "expected": {"answer": "insufficient information", "confidence": "insufficient"}}
+{"input": "Context: Mount Everest is the tallest mountain on Earth, standing at 8,849 meters.\nQuestion: How tall is Mount Everest?", "expected": {"answer": "8,849 meters", "confidence": "high"}}

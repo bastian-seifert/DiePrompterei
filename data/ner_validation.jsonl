@@ -1,0 +1,5 @@
+{"input": "John Smith works at Microsoft in Seattle.", "expected": {"entities": [{"text": "John Smith", "type": "PERSON"}, {"text": "Microsoft", "type": "ORG"}, {"text": "Seattle", "type": "LOC"}]}}
+{"input": "Apple announced a new product launch in San Francisco.", "expected": {"entities": [{"text": "Apple", "type": "ORG"}, {"text": "San Francisco", "type": "LOC"}]}}
+{"input": "Dr. Sarah Johnson from Harvard University published her research.", "expected": {"entities": [{"text": "Sarah Johnson", "type": "PERSON"}, {"text": "Harvard University", "type": "ORG"}]}}
+{"input": "The meeting between representatives from China and the United States was held in Geneva.", "expected": {"entities": [{"text": "China", "type": "LOC"}, {"text": "United States", "type": "LOC"}, {"text": "Geneva", "type": "LOC"}]}}
+{"input": "Tesla CEO Elon Musk visited the factory in Berlin.", "expected": {"entities": [{"text": "Tesla", "type": "ORG"}, {"text": "Elon Musk", "type": "PERSON"}, {"text": "Berlin", "type": "LOC"}]}}

@@ -1,0 +1,10 @@
+{"input": "I absolutely love this product! Best purchase I've made in years.", "expected": {"sentiment": "positive"}}
+{"input": "Terrible quality. Broke after just one day of use.", "expected": {"sentiment": "negative"}}
+{"input": "It works as described. Nothing special but gets the job done.", "expected": {"sentiment": "neutral"}}
+{"input": "Worst customer service I've ever experienced. Completely unacceptable.", "expected": {"sentiment": "negative"}}
+{"input": "Amazing! Exceeded all my expectations and arrived early too.", "expected": {"sentiment": "positive"}}
+{"input": "The product is okay. Meets basic requirements but lacks premium features.", "expected": {"sentiment": "neutral"}}
+{"input": "Don't waste your money. Total ripoff and doesn't work as advertised.", "expected": {"sentiment": "negative"}}
+{"input": "Fantastic quality and excellent value for money. Highly recommend!", "expected": {"sentiment": "positive"}}
+{"input": "Standard product. Does what it's supposed to do, no complaints.", "expected": {"sentiment": "neutral"}}
+{"input": "Absolutely horrible experience from start to finish. Very disappointed.", "expected": {"sentiment": "negative"}}

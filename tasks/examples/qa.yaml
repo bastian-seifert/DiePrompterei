@@ -1,0 +1,51 @@
+task:
+  name: "question_answering"
+  type: "qa"
+  goal: "Answer questions based on provided context, or respond 'insufficient information' if cannot answer"
+
+  output_schema:
+    type: "object"
+    properties:
+      answer:
+        type: "string"
+      confidence:
+        type: "string"
+        enum: ["high", "medium", "low", "insufficient"]
+    required: ["answer", "confidence"]
+
+  validation:
+    path: "./data/qa_validation.jsonl"
+
+  metrics:
+    primary: "token_f1"
+    secondary: ["token_precision", "token_recall"]
+
+  scoring:
+    base_metric_weight: 1.0
+    variance_penalty_weight: 0.2
+
+  optimization:
+    max_rounds: 6
+    candidates_per_round: 4
+    poet_temperature: 0.5
+    convergence:
+      improvement_threshold: 0.02
+      plateau_rounds: 2
+      min_rounds: 3
+
+  llm:
+    provider: "anthropic"
+    model: "claude-sonnet-4"
+    judge_temperature: 0.2
+    guardian_temperature: 0.3
+
+  baseline_prompt: |
+    Answer the following question based on the provided context. If you cannot answer based on the context, respond with "insufficient information".
+
+    {input}
+
+    Provide your answer as JSON:
+    {
+      "answer": "your answer here",
+      "confidence": "high" (or "medium", "low", "insufficient")
+    }

@@ -1,0 +1,45 @@
+task:
+  name: "sentiment_classification"
+  type: "classification"
+  goal: "Classify customer reviews into positive, negative, or neutral sentiment"
+
+  output_schema:
+    type: "object"
+    properties:
+      sentiment:
+        type: "string"
+        enum: ["positive", "negative", "neutral"]
+    required: ["sentiment"]
+
+  validation:
+    path: "./data/sentiment_validation.jsonl"
+
+  metrics:
+    primary: "exact_match"
+    secondary: ["precision", "recall"]
+
+  scoring:
+    base_metric_weight: 1.0
+    variance_penalty_weight: 0.2
+
+  optimization:
+    max_rounds: 6
+    candidates_per_round: 4
+    poet_temperature: 0.5
+    convergence:
+      improvement_threshold: 0.02
+      plateau_rounds: 2
+      min_rounds: 3
+
+  llm:
+    provider: "anthropic"
+    model: "claude-sonnet-4"
+    judge_temperature: 0.2
+    guardian_temperature: 0.3
+
+  baseline_prompt: |
+    Classify the following text as positive, negative, or neutral sentiment.
+
+    Text: {input}
+
+    Output your answer as JSON: {"sentiment": "positive"} or {"sentiment": "negative"} or {"sentiment": "neutral"}

@@ -1,0 +1,59 @@
+task:
+  name: "entity_extraction"
+  type: "extraction"
+  goal: "Extract person names, organizations, and locations from text"
+
+  output_schema:
+    type: "object"
+    properties:
+      entities:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            text:
+              type: "string"
+            type:
+              type: "string"
+              enum: ["PERSON", "ORG", "LOC"]
+          required: ["text", "type"]
+    required: ["entities"]
+
+  validation:
+    path: "./data/ner_validation.jsonl"
+
+  metrics:
+    primary: "span_f1"
+    secondary: ["span_precision", "span_recall"]
+
+  scoring:
+    base_metric_weight: 1.0
+    variance_penalty_weight: 0.2
+
+  optimization:
+    max_rounds: 6
+    candidates_per_round: 4
+    poet_temperature: 0.5
+    convergence:
+      improvement_threshold: 0.02
+      plateau_rounds: 2
+      min_rounds: 3
+
+  llm:
+    provider: "anthropic"
+    model: "claude-sonnet-4"
+    judge_temperature: 0.2
+    guardian_temperature: 0.3
+
+  baseline_prompt: |
+    Extract all person names (PERSON), organizations (ORG), and locations (LOC) from the following text.
+
+    Text: {input}
+
+    Output as JSON:
+    {
+      "entities": [
+        {"text": "entity name", "type": "PERSON"},
+        {"text": "entity name", "type": "ORG"}
+      ]
+    }
