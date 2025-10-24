@@ -89,14 +89,14 @@ Goal: Classify customer reviews into positive, negative, or neutral sentiment
 Optimization Complete!
 
 ╭─────────────────────────────────────────────╮
-│ Metric          │ Value                    │
+│ Metric          │ Value                     │
 ├─────────────────────────────────────────────┤
-│ Final Score     │ 0.9200                   │
-│ Rounds          │ 4                        │
-│ Convergence     │ improvement_below_thresh │
-│ API Calls       │ 45                       │
-│ Tokens          │ 12000 in / 3500 out     │
-│ Duration        │ 42.3s                    │
+│ Final Score     │ 0.9200                    │
+│ Rounds          │ 4                         │
+│ Convergence     │ improvement_below_thresh  │
+│ API Calls       │ 45                        │
+│ Tokens          │ 12000 in / 3500 out       │
+│ Duration        │ 42.3s                     │
 ╰─────────────────────────────────────────────╯
 
 Results saved to: receipts/sentiment_classification_best.txt
@@ -254,16 +254,16 @@ Generate free-form text responses.
 ┌─────────────────────────────────────────────────────────────┐
 │                      Orchestrator                           │
 │                                                             │
-│  ┌──────────┐     ┌──────────┐     ┌──────────┐          │
-│  │  Poet    │────▶│  Judge   │────▶│ Guardian │          │
-│  │          │     │          │     │          │          │
-│  │ Generates│     │Evaluates │     │ Filters  │          │
-│  │candidates│     │on val set│     │ feedback │          │
-│  └──────────┘     └──────────┘     └──────────┘          │
-│       ▲                                    │               │
-│       │                                    │               │
-│       └────────────────────────────────────┘               │
-│            Sanitized feedback only                         │
+│  ┌──────────┐     ┌──────────┐     ┌──────────┐             │
+│  │  Poet    │───> │  Judge   │ ───>│ Guardian │             │
+│  │          │     │          │     │          │             │
+│  │ Generates│     │Evaluates │     │ Filters  │             │
+│  │candidates│     │on val set│     │ feedback │             │
+│  └──────────┘     └──────────┘     └──────────┘             │
+│       ▲                                    │                │
+│       │                                    │                │
+│       └────────────────────────────────────┘                │
+│            Sanitized feedback only                          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
