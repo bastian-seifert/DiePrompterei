@@ -5,6 +5,7 @@ Manages the interaction between Poet, Judge, and Guardian while enforcing
 the sacred separation between creation and validation.
 """
 
+import asyncio
 import json
 import time
 from pathlib import Path
@@ -13,7 +14,8 @@ from ..adapters.metrics import compute_final_score
 from ..adapters.schema_validator import safe_extract_output
 from .guardian import Guardian
 from .judge import Judge
-from .llm_client import LLMClient, create_llm_client
+from .llm_client import AsyncLLMClient, LLMClient, create_async_llm_client, create_llm_client
+from .logger import logger
 from .models import (
     OptimizationReceipt,
     RoundReceipt,
@@ -127,16 +129,16 @@ class Orchestrator:
 
         return data
 
-    def _run_prompt_on_input(
-        self, prompt_template: str, input_text: str, client: LLMClient
+    async def _run_prompt_on_input(
+        self, prompt_template: str, input_text: str, client: AsyncLLMClient
     ) -> dict:
         """
-        Apply prompt to a single input and extract structured output.
+        Apply prompt to a single input and extract structured output asynchronously.
 
         Args:
             prompt_template: Prompt with {input} placeholder
             input_text: Input text to process
-            client: LLM client to use
+            client: Async LLM client to use
 
         Returns:
             Extracted structured output dict
@@ -144,8 +146,8 @@ class Orchestrator:
         # Fill in the {input} placeholder
         filled_prompt = prompt_template.replace("{input}", input_text)
 
-        # Call LLM (deterministic for evaluation)
-        response = client.generate(
+        # Call LLM asynchronously (deterministic for evaluation)
+        response = await client.generate(
             system_prompt="",
             user_prompt=filled_prompt,
             temperature=0.0,
@@ -164,31 +166,43 @@ class Orchestrator:
         )
         return safe_extract_output(response.text, schema)
 
-    def _evaluate_prompt(self, prompt: str, client: LLMClient) -> dict:
+    async def _evaluate_prompt(self, prompt: str, client: AsyncLLMClient) -> dict:
         """
-        Evaluate a prompt on the full validation set.
+        Evaluate a prompt on the full validation set with parallel execution.
 
         Args:
             prompt: Prompt template to evaluate
-            client: LLM client to use
+            client: Async LLM client to use
 
         Returns:
             Dict with predictions, judge_output, guardian_output, final_score
         """
-        # Run prompt on all validation inputs (pre-compute predictions)
-        predictions = []
+        # Prepare inputs and expected outputs
         inputs = []
         expected = []
 
         for item in self.validation_data:
-            input_text = item["input"]
-            inputs.append(input_text)
+            inputs.append(item["input"])
             expected.append(item["expected"])
 
-            prediction = self._run_prompt_on_input(prompt, input_text, client)
-            predictions.append(prediction)
+        # Execute all validation examples in parallel
+        num_examples = len(inputs)
+        logger.info(f"Executing {num_examples} validation examples in parallel...")
 
-        # Judge evaluates predictions
+        async with asyncio.TaskGroup() as tg:
+            tasks = [
+                tg.create_task(self._run_prompt_on_input(prompt, input_text, client))
+                for input_text in inputs
+            ]
+
+        predictions = [task.result() for task in tasks]
+
+        logger.info(
+            f"Completed {num_examples} executions "
+            f"({self.total_tokens_input} input tokens, {self.total_tokens_output} output tokens)"
+        )
+
+        # Judge evaluates predictions (sync call, single LLM request)
         judge_output = self.judge.evaluate(
             predictions=predictions,
             expected=expected,
@@ -196,7 +210,7 @@ class Orchestrator:
             task_config=self.task_config,
         )
 
-        # Guardian filters feedback
+        # Guardian filters feedback (sync call, single LLM request)
         guardian_output = self.guardian.filter_feedback(judge_output)
 
         # Verify no leakage (assertion)
@@ -221,9 +235,9 @@ class Orchestrator:
             "final_score": final_score,
         }
 
-    def optimize(self) -> OptimizationReceipt:
+    async def optimize(self) -> OptimizationReceipt:
         """
-        Run the full optimization loop.
+        Run the full optimization loop with parallel execution.
 
         Returns:
             Complete optimization receipt with history and best prompt
@@ -234,8 +248,8 @@ class Orchestrator:
             self.task_config.task.optimization.convergence
         )
 
-        # Create shared LLM client for prompt execution
-        execution_client = create_llm_client(self.task_config.task.llm)
+        # Create shared async LLM client for prompt execution
+        execution_client = create_async_llm_client(self.task_config.task.llm)
 
         # Round 0: Evaluate baseline if provided
         best_prompt = self.task_config.task.baseline_prompt
@@ -243,7 +257,7 @@ class Orchestrator:
 
         if best_prompt:
             round_start = time.time()
-            result = self._evaluate_prompt(best_prompt, execution_client)
+            result = await self._evaluate_prompt(best_prompt, execution_client)
 
             rounds.append(
                 RoundReceipt(
@@ -280,14 +294,24 @@ class Orchestrator:
                 num_candidates=self.task_config.task.optimization.candidates_per_round,
             )
 
-            # Evaluate all candidates
+            # Evaluate all candidates in parallel
+            num_candidates = len(candidates)
+            logger.info(f"Evaluating {num_candidates} candidates in parallel...")
+
+            async with asyncio.TaskGroup() as tg:
+                candidate_tasks = [
+                    tg.create_task(self._evaluate_prompt(candidate.prompt, execution_client))
+                    for candidate in candidates
+                ]
+
+            # Find best candidate
             best_candidate_prompt = None
             best_candidate_score = -float("inf")
             best_candidate_guardian_output = None
             best_candidate_judge_output = None
 
-            for candidate in candidates:
-                result = self._evaluate_prompt(candidate.prompt, execution_client)
+            for candidate, task in zip(candidates, candidate_tasks):
+                result = task.result()
 
                 if result["final_score"] > best_candidate_score:
                     best_candidate_score = result["final_score"]

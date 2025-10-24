@@ -2,6 +2,7 @@
 Command-line interface for Die Prompterei.
 """
 
+import asyncio
 import json
 from pathlib import Path
 
@@ -55,7 +56,7 @@ def optimize(task_file: str, output_dir: str):
     # Run optimization
     try:
         orchestrator = Orchestrator(task_config)
-        receipt = orchestrator.optimize()
+        receipt = asyncio.run(orchestrator.optimize())
 
         # Display results
         console.print("\n[bold green]Optimization Complete![/bold green]\n")
@@ -116,12 +117,12 @@ def eval(task_file: str, prompt: str):
 
     # Evaluate
     try:
-        from .core.llm_client import create_llm_client
+        from .core.llm_client import create_async_llm_client
 
         orchestrator = Orchestrator(task_config)
-        execution_client = create_llm_client(task_config.task.llm)
+        execution_client = create_async_llm_client(task_config.task.llm)
 
-        result = orchestrator._evaluate_prompt(prompt_text, execution_client)
+        result = asyncio.run(orchestrator._evaluate_prompt(prompt_text, execution_client))
 
         # Display results
         console.print("[bold green]Evaluation Complete![/bold green]\n")
