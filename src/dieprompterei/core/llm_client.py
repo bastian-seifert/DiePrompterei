@@ -9,6 +9,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 
+from .logger import logger
 from .models import LLMConfig, LLMResponse
 
 
@@ -121,6 +122,10 @@ class AnthropicClient(LLMClient):
         self, system_prompt: str, user_prompt: str, temperature: float
     ) -> LLMResponse:
         """Generate response using Claude API."""
+        logger.info(
+            f"Calling Anthropic API: model={self.model}, temperature={temperature:.2f}"
+        )
+
         response = self.client.messages.create(
             model=self.model,
             max_tokens=4096,
@@ -129,11 +134,18 @@ class AnthropicClient(LLMClient):
             messages=[{"role": "user", "content": user_prompt}],
         )
 
-        return LLMResponse(
+        llm_response = LLMResponse(
             text=response.content[0].text,
             tokens_input=response.usage.input_tokens,
             tokens_output=response.usage.output_tokens,
         )
+
+        logger.info(
+            f"Received response: {llm_response.tokens_input} input tokens, "
+            f"{llm_response.tokens_output} output tokens"
+        )
+
+        return llm_response
 
 
 class OpenAIClient(LLMClient):
@@ -165,6 +177,10 @@ class OpenAIClient(LLMClient):
         self, system_prompt: str, user_prompt: str, temperature: float
     ) -> LLMResponse:
         """Generate response using OpenAI API."""
+        logger.info(
+            f"Calling OpenAI API: model={self.model}, temperature={temperature:.2f}"
+        )
+
         response = self.client.chat.completions.create(
             model=self.model,
             temperature=temperature,
@@ -174,11 +190,18 @@ class OpenAIClient(LLMClient):
             ],
         )
 
-        return LLMResponse(
+        llm_response = LLMResponse(
             text=response.choices[0].message.content,
             tokens_input=response.usage.prompt_tokens,
             tokens_output=response.usage.completion_tokens,
         )
+
+        logger.info(
+            f"Received response: {llm_response.tokens_input} input tokens, "
+            f"{llm_response.tokens_output} output tokens"
+        )
+
+        return llm_response
 
 
 def create_llm_client(config: LLMConfig) -> LLMClient:

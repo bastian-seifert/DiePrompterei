@@ -9,6 +9,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from .llm_client import LLMClient
+from .logger import logger
 from .models import GuardianOutput, PromptCandidate, TaskConfig
 
 
@@ -55,6 +56,13 @@ class Poet:
         Returns:
             List of prompt candidates with reasoning
         """
+        if feedback:
+            logger.info(
+                f"Poet: Generating {num_candidates} refined candidates (primary score: {feedback.scores.primary:.3f})"
+            )
+        else:
+            logger.info(f"Poet: Generating {num_candidates} baseline candidates")
+
         # Render prompt from template
         rendered = self.template.render(
             task_goal=task_config.task.goal,
@@ -87,7 +95,7 @@ class Poet:
 
         # Parse candidates
         candidates_data = response.get("candidates", [])
-        return [
+        candidates = [
             PromptCandidate(
                 id=c["id"],
                 prompt=c["prompt"],
@@ -95,6 +103,9 @@ class Poet:
             )
             for c in candidates_data
         ]
+
+        logger.info(f"Poet: Generated {len(candidates)} candidates")
+        return candidates
 
     def generate_baseline_candidates(
         self, task_config: TaskConfig, num_candidates: int = 4

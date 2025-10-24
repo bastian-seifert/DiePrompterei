@@ -9,6 +9,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from .llm_client import LLMClient
+from .logger import logger
 from .models import GuardianOutput, JudgeOutput
 
 
@@ -48,6 +49,11 @@ class Guardian:
         Returns:
             Sanitized feedback safe for Poet consumption
         """
+        logger.info(
+            f"Guardian: Filtering feedback ({len(judge_output.individual_results)} results, "
+            f"{len(judge_output.error_analysis)} error patterns)"
+        )
+
         # Render prompt from template
         rendered = self.template.render(
             judge_output=judge_output.model_dump()
@@ -61,11 +67,18 @@ class Guardian:
                 temperature=self.temperature,
             )
 
-            return GuardianOutput(
+            output = GuardianOutput(
                 scores=judge_output.scores,  # Scores are safe to pass through
                 error_patterns=response.get("error_patterns", []),
                 suggestions=response.get("suggestions", []),
             )
+
+            logger.info(
+                f"Guardian: Feedback filtered. {len(output.error_patterns)} patterns, "
+                f"{len(output.suggestions)} suggestions retained"
+            )
+
+            return output
 
         except (ValueError, KeyError) as e:
             # Fallback: provide minimal safe feedback

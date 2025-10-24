@@ -10,6 +10,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from ..adapters.metrics import compute_variance, get_metric_function
 from .llm_client import LLMClient
+from .logger import logger
 from .models import EvaluationScores, IndividualResult, JudgeOutput, TaskConfig
 
 
@@ -58,6 +59,10 @@ class Judge:
         Returns:
             Complete evaluation with scores, error analysis, and suggestions
         """
+        logger.info(
+            f"Judge: Evaluating {len(predictions)} predictions using {task_config.task.metrics.primary} metric"
+        )
+
         # Compute primary metric
         metric_func = get_metric_function(
             task_config.task.type, task_config.task.metrics.primary
@@ -96,10 +101,15 @@ class Judge:
                 pass
 
         # Get LLM-based error analysis and suggestions
+        logger.info("Judge: Requesting LLM-based error analysis")
         analysis = self._get_llm_analysis(
             individual_results=individual_results,
             task_config=task_config,
             primary_score=primary_score,
+        )
+
+        logger.info(
+            f"Judge: Evaluation complete. Primary score: {primary_score:.3f}, Variance: {variance:.3f}"
         )
 
         return JudgeOutput(
