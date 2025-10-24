@@ -52,6 +52,10 @@ class ConvergenceTracker:
         """
         self.history.append(current_score)
 
+        # Check target score threshold (always, even before min_rounds)
+        if self.config.target_score is not None and current_score >= self.config.target_score:
+            return (True, f"target_score_reached_{self.config.target_score:.3f}")
+
         # Always run minimum rounds
         if current_round < self.config.min_rounds:
             return (False, "")
@@ -276,7 +280,28 @@ class Orchestrator:
             )
 
             best_score = result["final_score"]
-            convergence_tracker.update(0, best_score)
+            should_stop, reason = convergence_tracker.update(0, best_score)
+
+            # Early exit if baseline is perfect or reaches target
+            if should_stop:
+                logger.info(
+                    f"Baseline achieves target score ({best_score:.3f}). "
+                    f"Skipping optimization (reason: {reason})."
+                )
+                return OptimizationReceipt(
+                    task_name=self.task_config.task.name,
+                    timestamp=OptimizationReceipt.create_timestamp(),
+                    rounds=rounds,
+                    final_prompt=best_prompt,
+                    final_score=best_score,
+                    convergence_reason=reason,
+                    total_cost={
+                        "api_calls": self.total_api_calls,
+                        "tokens_input": self.total_tokens_input,
+                        "tokens_output": self.total_tokens_output,
+                        "duration_seconds": time.time() - start_time,
+                    },
+                )
 
         # Optimization loop
         current_feedback = None

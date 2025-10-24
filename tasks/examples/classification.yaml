@@ -30,6 +30,7 @@ task:
       improvement_threshold: 0.02
       plateau_rounds: 2
       min_rounds: 3
+      target_score: 0.98  # Stop if score reaches 98% (good enough)
 
   llm:
     provider: "anthropic"

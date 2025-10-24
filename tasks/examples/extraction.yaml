@@ -38,6 +38,7 @@ task:
       improvement_threshold: 0.02
       plateau_rounds: 2
       min_rounds: 3
+      target_score: 0.95  # Stop if span F1 reaches 95%
 
   llm:
     provider: "anthropic"

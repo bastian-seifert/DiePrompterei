@@ -50,11 +50,13 @@ class ConvergenceConfig(BaseModel):
     Optimization stops when:
     1. current_round >= min_rounds AND
     2. (improvement < improvement_threshold OR no improvement for plateau_rounds)
+    3. OR current_score >= target_score (if target_score is set)
     """
 
     improvement_threshold: float = 0.02
     plateau_rounds: int = 2
     min_rounds: int = 3
+    target_score: float | None = None  # Stop if score reaches this threshold
 
 
 class OptimizationConfig(BaseModel):
