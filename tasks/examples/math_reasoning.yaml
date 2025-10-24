@@ -1,0 +1,46 @@
+task:
+  name: "math_reasoning"
+  type: "generation"
+  goal: "Solve grade-school math word problems requiring multi-step arithmetic reasoning"
+
+  output_schema:
+    type: "object"
+    properties:
+      answer:
+        type: "string"
+        description: "The numeric answer only (no units, no explanations)"
+    required: ["answer"]
+
+  validation:
+    path: "./data/gsm8k_validation.jsonl"
+
+  metrics:
+    primary: "exact_match"
+    secondary: []
+
+  scoring:
+    base_metric_weight: 1.0
+    variance_penalty_weight: 0.3  # Consistency matters for math
+
+  optimization:
+    max_rounds: 6
+    candidates_per_round: 4
+    poet_temperature: 0.5
+    convergence:
+      improvement_threshold: 0.05  # Math is harder, allow bigger jumps
+      plateau_rounds: 2
+      min_rounds: 3
+      target_score: 0.85  # 85% is excellent for math reasoning
+
+  llm:
+    provider: "anthropic"
+    model: "claude-haiku-4-5"
+    judge_temperature: 0.2
+    guardian_temperature: 0.3
+
+  baseline_prompt: |
+    Solve the following math word problem. Provide only the final numeric answer as a JSON object.
+
+    Problem: {input}
+
+    Output your answer as JSON: {"answer": "your_numeric_answer"}

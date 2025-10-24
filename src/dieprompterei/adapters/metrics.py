@@ -249,6 +249,7 @@ METRICS_BY_TASK = {
         "token_recall": lambda p, e: token_f1(p, e)["token_recall"],
     },
     "generation": {
+        "exact_match": exact_match,  # For numeric/structured generation tasks
         "token_f1": lambda p, e: token_f1(p, e)["token_f1"],
         "token_precision": lambda p, e: token_f1(p, e)["token_precision"],
         "token_recall": lambda p, e: token_f1(p, e)["token_recall"],
