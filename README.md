@@ -143,7 +143,7 @@ task:
 
   llm:
     provider: "anthropic"  # anthropic|openai
-    model: "claude-sonnet-4"
+    model: "claude-sonnet-4-5"  # or "gpt-4" for OpenAI
     judge_temperature: 0.2
     guardian_temperature: 0.3
 

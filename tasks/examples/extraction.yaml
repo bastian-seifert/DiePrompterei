@@ -41,7 +41,7 @@ task:
 
   llm:
     provider: "anthropic"
-    model: "claude-sonnet-4"
+    model: "claude-sonnet-4-5"
     judge_temperature: 0.2
     guardian_temperature: 0.3
 

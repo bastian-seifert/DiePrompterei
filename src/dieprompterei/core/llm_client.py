@@ -95,7 +95,7 @@ class LLMClient(ABC):
 class AnthropicClient(LLMClient):
     """Anthropic Claude API client."""
 
-    def __init__(self, model: str = "claude-sonnet-4"):
+    def __init__(self, model: str = "claude-sonnet-4-5"):
         """
         Initialize Anthropic client.
 
